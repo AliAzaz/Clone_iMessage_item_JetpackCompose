@@ -167,7 +167,7 @@ fun MessageItemView(
 
         Divider(
             color = Color.LightGray,
-            modifier = Modifier.fillMaxWidth().height(2.dp)
+            modifier = Modifier.fillMaxWidth().height(1.dp)
         )
     })
 }
@@ -364,10 +364,15 @@ fun StaticDrawerSample(
 ) {
     BottomDrawerLayout(drawerState = btmDrawerState, drawerContent = {
         Text(text = "Click here")
-    }, bodyContent = {}, gesturesEnabled = false, modifier = Modifier.height(30.dp))
+    }, bodyContent = {}, gesturesEnabled = false)
+
+    /*if (btmDrawerState.isOpen) {
+        delBtnState.value = DeleteBtnAnimateState.EXPAND
+        delBtnIconState.value = DeleteBtnAnimateState.EXPAND
+    }
+
 
     btmDrawerState.close {
-        delBtnState.value = DeleteBtnAnimateState.INITIAL
-        delBtnIconState.value = DeleteBtnAnimateState.INITIAL
-    }
+        Log.d("TAG", "StaticDrawerSample")
+    }*/
 }
