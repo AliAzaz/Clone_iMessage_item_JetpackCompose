@@ -1,6 +1,7 @@
 package com.example.practiceswipeable
 
 import android.os.Bundle
+import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.animatedValue
@@ -371,8 +372,13 @@ fun StaticDrawerSample(
         delBtnIconState.value = DeleteBtnAnimateState.EXPAND
     }
 
-
     btmDrawerState.close {
         Log.d("TAG", "StaticDrawerSample")
     }*/
+
+    if (btmDrawerState.isOpen) {
+        btmDrawerState.close {
+            Log.d("TAG", "StaticDrawerSample")
+        }
+    }
 }
