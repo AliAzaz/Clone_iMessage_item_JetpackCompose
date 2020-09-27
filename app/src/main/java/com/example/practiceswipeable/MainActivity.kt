@@ -14,6 +14,7 @@ import androidx.compose.foundation.animation.fling
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowRight
@@ -33,6 +34,7 @@ import androidx.compose.ui.layout
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -79,7 +81,9 @@ fun SwipeableEvent() {
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
         val btmDrawerState = rememberBottomDrawerState(BottomDrawerValue.Closed)
 
-        Box(modifier = Modifier.fillMaxSize(), children = {
+        val flagDrawer = remember { mutableStateOf(false) }
+
+        Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
 
 //        LazyColumnFor(items = listOf(0, 1, 2), itemContent = { item ->
             MessageItemView(
@@ -91,12 +95,13 @@ fun SwipeableEvent() {
                     minWidth = btnWidthState.value,
                     maxWidth = btnWidthState.value.times(3)
                 ),
-                btmDrawerState = btmDrawerState
+                btmDrawerState = btmDrawerState,
+                flagDrawer = flagDrawer
             )
 //        })
 
 
-            StaticDrawerSample(btmDrawerState, delBtnState, delBtnIconState)
+            StaticDrawerSample(btmDrawerState, delBtnState, delBtnIconState, flagDrawer)
 
         })
     })
@@ -110,61 +115,69 @@ fun MessageItemView(
     delBtnState: MutableState<DeleteBtnAnimateState>,
     delBtnIconState: MutableState<DeleteBtnAnimateState>,
     state: TransitionState,
-    btmDrawerState: BottomDrawerState
+    btmDrawerState: BottomDrawerState,
+    flagDrawer: MutableState<Boolean>
 ) {
     Column(modifier = Modifier.preferredHeight(110.dp), children = {
-        RowView(btnWidthState = btnWidthState, modifier = Modifier, children = {
-            Box(
-                modifier = Modifier.fillMaxWidth()
-                    .height(110.dp)
-                    .padding(5.dp, 5.dp, 0.dp, 10.dp),
-                children = {
-                    Row(Modifier, children = {
-                        AvatarImage(url = R.drawable.scene_01)
-                        Column(
-                            modifier = Modifier.padding(
-                                start = 10.dp,
-                                top = 5.dp,
-                                end = 15.dp
-                            ), children = {
-                                TitleRowBox {
-                                    TitleRow()
-                                }
-                                Text(
-                                    text = "ABCD 123456789",
-                                    maxLines = 1,
-                                    modifier = Modifier.preferredHeight(80.dp)
-                                        .padding(0.dp, 5.dp, 0.dp, 0.dp),
-                                    overflow = TextOverflow.Ellipsis,
-                                    style = MaterialTheme.typography.body2
-                                )
-                            })
+        RowView(
+            btnWidthState = btnWidthState,
+            modifier = Modifier,
+            children = {
+                Box(
+                    modifier = Modifier.fillMaxWidth()
+                        .height(110.dp)
+                        .padding(5.dp, 5.dp, 0.dp, 10.dp),
+                    children = {
+                        Row(Modifier, children = {
+                            AvatarImage(url = R.drawable.scene_01)
+                            Column(
+                                modifier = Modifier.padding(
+                                    start = 10.dp,
+                                    top = 5.dp,
+                                    end = 15.dp
+                                ), children = {
+                                    TitleRowBox {
+                                        TitleRow()
+                                    }
+                                    Text(
+                                        text = "ABCD 123456789",
+                                        maxLines = 1,
+                                        modifier = Modifier.preferredHeight(80.dp)
+                                            .padding(0.dp, 5.dp, 0.dp, 0.dp),
+                                        overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.body2
+                                    )
+                                })
+                        })
                     })
-                })
 
-            IconButton(
-                onClick = {},
-                modifier = Modifier.background(Color.Gray).height(110.dp),
-                icon = {
-                    Icon(asset = Icons.Filled.Edit, tint = Color.White)
-                })
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier.background(Color.Gray).height(110.dp),
+                    icon = {
+                        Icon(asset = Icons.Filled.Edit, tint = Color.White)
+                    })
 
 
-            IconButton(
-                onClick = {
-                    delBtnState.value = DeleteBtnAnimateState.IDLE
-                    delBtnIconState.value = DeleteBtnAnimateState.IDLE
-                    btmDrawerState.open()
-                },
-                modifier = Modifier.background(Color.Red).size(state[width], 110.dp),
-                icon = {
-                    Icon(
-                        asset = Icons.Filled.Delete,
-                        tint = Color.White,
-                        modifier = Modifier.padding(0.dp, 0.dp, state[iconPadding], 0.dp)
-                    )
-                })
-        }, delBtnState = delBtnState, delBtnIconState = delBtnIconState)
+                IconButton(
+                    onClick = {
+                        delBtnState.value = DeleteBtnAnimateState.EXPAND
+                        delBtnIconState.value = DeleteBtnAnimateState.EXPAND
+                        btmDrawerState.open()
+                    },
+                    modifier = Modifier.background(Color.Red).size(state[width], 110.dp),
+                    icon = {
+                        Icon(
+                            asset = Icons.Filled.Delete,
+                            tint = Color.White,
+                            modifier = Modifier.padding(0.dp, 0.dp, state[iconPadding], 0.dp)
+                        )
+                    })
+            },
+            delBtnState = delBtnState,
+            delBtnIconState = delBtnIconState,
+            flagDrawer = flagDrawer
+        )
 
         Divider(
             color = Color.LightGray,
@@ -172,6 +185,7 @@ fun MessageItemView(
         )
     })
 }
+
 
 @Composable
 fun Modifier.swipe(): Modifier {
@@ -218,6 +232,7 @@ fun Modifier.swipe(): Modifier {
     )
 }
 
+
 @Composable
 fun RowView(
     btnWidthState: MutableState<Dp>,
@@ -225,9 +240,9 @@ fun RowView(
     children: @Composable () -> Unit,
     delBtnState: MutableState<DeleteBtnAnimateState>,
     delBtnIconState: MutableState<DeleteBtnAnimateState>,
+    flagDrawer: MutableState<Boolean>,
 ) {
     val threshold = .8f
-
     val width = remember { mutableStateOf(0) }
     val deleted = remember { mutableStateOf(false) }
     val positionOffset = animatedFloat(0f)
@@ -236,10 +251,8 @@ fun RowView(
 
     val modify = modifier.draggable(orientation = Orientation.Horizontal,
         onDragStarted = {
-            /*btnWidthState.value = 0.dp
-            delBtnState.value = DeleteBtnAnimateState.INITIAL
-            delBtnIconState.value = DeleteBtnAnimateState.INITIAL*/
         },
+        enabled = !flagDrawer.value,
         onDrag = { delta ->
             positionOffset.snapTo((positionOffset.value + delta).coerceAtMost(0f))
             delBtnState.value = DeleteBtnAnimateState.INITIAL
@@ -261,6 +274,11 @@ fun RowView(
 
         }
     )
+
+    if (delBtnState.value == DeleteBtnAnimateState.IDLE) {
+        positionOffset.animateTo(0f, tween(100))
+        flagDrawer.value = false
+    }
 
     Layout(children = children, modifier = modify) { measures, constraints ->
         width.value = constraints.maxWidth.div(3)
@@ -361,24 +379,50 @@ fun TitleRowBox(children: @Composable () -> Unit) {
 fun StaticDrawerSample(
     btmDrawerState: BottomDrawerState,
     delBtnState: MutableState<DeleteBtnAnimateState>,
-    delBtnIconState: MutableState<DeleteBtnAnimateState>
+    delBtnIconState: MutableState<DeleteBtnAnimateState>,
+    flagDrawer: MutableState<Boolean>
 ) {
-    BottomDrawerLayout(drawerState = btmDrawerState, drawerContent = {
-        Text(text = "Click here")
-    }, bodyContent = {}, gesturesEnabled = false)
+    BottomDrawerLayout(
+        drawerState = btmDrawerState,
+        drawerContent = {
+            Column(modifier = Modifier.padding(10.dp), children = {
+                Column(
+                    modifier = Modifier.border(
+                        border = BorderStroke(1.dp, Color.Black),
+                        shape = RoundedCornerShape(3.dp)
+                    )
+                        .fillMaxWidth(),
+                    children = {
+                        Text(
+                            text = "Would you like to delete this conversation? This conversation will be deleted from all of your devices.",
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(5.dp)
+                        )
+                        Button(onClick = {}, content = {
+                            Text(text = "Delete", style = TextStyle(color = Color.Red))
+                        }, backgroundColor = Color.LightGray, modifier = Modifier.fillMaxWidth())
+                    })
 
-    /*if (btmDrawerState.isOpen) {
-        delBtnState.value = DeleteBtnAnimateState.EXPAND
-        delBtnIconState.value = DeleteBtnAnimateState.EXPAND
-    }
+                Divider(thickness = 5.dp)
 
-    btmDrawerState.close {
-        Log.d("TAG", "StaticDrawerSample")
-    }*/
+                Button(onClick = {}, content = {
+                    Text(text = "Cancel", style = TextStyle(color = Color.Blue))
+                }, backgroundColor = Color.LightGray, modifier = Modifier.fillMaxWidth())
+            })
+        },
+        bodyContent = {},
+        gesturesEnabled = false,
+        modifier = Modifier,
+        drawerBackgroundColor = Color.White,
+    )
 
     if (btmDrawerState.isOpen) {
-        btmDrawerState.close {
-            Log.d("TAG", "StaticDrawerSample")
-        }
+        Log.d("TAG", "StaticDrawerSample: Open")
+        flagDrawer.value = true
+    } else if (btmDrawerState.isClosed && flagDrawer.value) {
+        Log.d("TAG", "StaticDrawerSample: Closed")
+        delBtnState.value = DeleteBtnAnimateState.IDLE
+        delBtnIconState.value = DeleteBtnAnimateState.IDLE
     }
+
 }

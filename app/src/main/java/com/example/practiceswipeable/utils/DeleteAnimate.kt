@@ -10,8 +10,13 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
+/*Initial: means starting configuration
+* Idle : means it's ready to start animate
+* Expand: means animate to expanded state
+* */
+
 enum class DeleteBtnAnimateState {
-    IDLE, EXPAND, INITIAL
+    EXPAND, IDLE, INITIAL
 }
 
 val width = DpPropKey()
@@ -28,28 +33,28 @@ fun transactionAnimationSetting(
             this[width] = minWidth
             this[iconPadding] = 0.dp
         }
-        state(DeleteBtnAnimateState.IDLE) {
+        state(DeleteBtnAnimateState.EXPAND) {
             this[width] = minWidth
             this[iconPadding] = 0.dp
         }
-        state(DeleteBtnAnimateState.EXPAND) {
+        state(DeleteBtnAnimateState.IDLE) {
             this[width] = maxWidth
             this[iconPadding] = minWidth.times(2)
         }
-        transition(fromState = DeleteBtnAnimateState.IDLE, toState = DeleteBtnAnimateState.EXPAND) {
-            width using tween(durationMillis = 1000)
-            iconPadding using tween(durationMillis = 1000)
+        transition(fromState = DeleteBtnAnimateState.EXPAND, toState = DeleteBtnAnimateState.IDLE) {
+            width using tween(durationMillis = 500)
+            iconPadding using tween(durationMillis = 500)
         }
-        transition(DeleteBtnAnimateState.EXPAND to DeleteBtnAnimateState.IDLE) {
-            width using tween(durationMillis = 1000)
-            iconPadding using tween(durationMillis = 1000)
+        transition(DeleteBtnAnimateState.IDLE to DeleteBtnAnimateState.EXPAND) {
+            width using tween(durationMillis = 500)
+            iconPadding using tween(durationMillis = 500)
         }
     }
 
-    val toState = if (delBtnState.value == DeleteBtnAnimateState.IDLE) {
-        DeleteBtnAnimateState.EXPAND
-    } else {
+    val toState = if (delBtnState.value == DeleteBtnAnimateState.EXPAND) {
         DeleteBtnAnimateState.IDLE
+    } else {
+        DeleteBtnAnimateState.EXPAND
     }
 
     return transition(
