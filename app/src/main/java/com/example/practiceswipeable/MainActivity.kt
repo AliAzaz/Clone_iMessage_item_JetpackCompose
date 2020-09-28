@@ -1,7 +1,6 @@
 package com.example.practiceswipeable
 
 import android.os.Bundle
-import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.animatedValue
@@ -34,6 +33,7 @@ import androidx.compose.ui.layout
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -71,21 +71,21 @@ fun DefaultPreview() {
     }
 }
 
+
 @Composable
 fun SwipeableEvent() {
 
     PracticeSwipeableTheme(content = {
 
         val btnWidthState = remember { mutableStateOf(0.dp) }
+        val btmDrawerState = rememberBottomDrawerState(BottomDrawerValue.Closed)
+        val flagDrawer = remember { mutableStateOf(false) }
         val delBtnState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
-        val btmDrawerState = rememberBottomDrawerState(BottomDrawerValue.Closed)
-
-        val flagDrawer = remember { mutableStateOf(false) }
 
         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
 
-//        LazyColumnFor(items = listOf(0, 1, 2), itemContent = { item ->
+//            LazyColumnFor(items = listOf(0, 1), itemContent = { item ->
             MessageItemView(
                 btnWidthState = btnWidthState,
                 delBtnState = delBtnState,
@@ -98,16 +98,24 @@ fun SwipeableEvent() {
                 btmDrawerState = btmDrawerState,
                 flagDrawer = flagDrawer
             )
-//        })
 
+            BottomStaticDrawerEvents(
+                btmDrawerState = btmDrawerState,
+                delBtnState = delBtnState,
+                delBtnIconState = delBtnIconState,
+                flagDrawer = flagDrawer
+            )
 
-            StaticDrawerSample(btmDrawerState, delBtnState, delBtnIconState, flagDrawer)
+//            })
+
+            BottomStaticDrawerInit(btmDrawerState)
 
         })
     })
 
 
 }
+
 
 @Composable
 fun MessageItemView(
@@ -136,7 +144,7 @@ fun MessageItemView(
                                     top = 5.dp,
                                     end = 15.dp
                                 ), children = {
-                                    TitleRowBox {
+                                    TitleRowContainer {
                                         TitleRow()
                                     }
                                     Text(
@@ -312,6 +320,7 @@ fun RowView(
 
 }
 
+
 @Composable
 fun AvatarImage(url: Int) {
     Box(
@@ -327,6 +336,27 @@ fun AvatarImage(url: Int) {
         })
 }
 
+
+/*Title and Date Items*/
+@Composable
+fun TitleRowContainer(children: @Composable () -> Unit) {
+    Layout(children = children, modifier = Modifier.height(30.dp)) { measurables, constraints ->
+        val width = constraints.maxWidth.div(5)
+        val title = measurables[0].measure(
+            androidx.compose.ui.unit.Constraints.fixedWidth(width.times(4))
+        )
+        val date = measurables[1].measure(
+            androidx.compose.ui.unit.Constraints.fixedWidth(width)
+        )
+        layout(width = constraints.maxWidth, height = constraints.maxHeight) {
+            title.place(x = 0, y = 0)
+            date.place(
+                x = title.width,
+                y = (constraints.maxHeight - date.height).div(3)
+            )
+        }
+    }
+}
 
 @Composable
 fun TitleRow() {
@@ -354,75 +384,95 @@ fun TitleRow() {
 }
 
 
+/*Bottom Drawer*/
 @Composable
-fun TitleRowBox(children: @Composable () -> Unit) {
-    Layout(children = children, modifier = Modifier.height(30.dp)) { measurables, constraints ->
-        val width = constraints.maxWidth.div(5)
-        val title = measurables[0].measure(
-            androidx.compose.ui.unit.Constraints.fixedWidth(width.times(4))
-        )
-        val date = measurables[1].measure(
-            androidx.compose.ui.unit.Constraints.fixedWidth(width)
-        )
-        layout(width = constraints.maxWidth, height = constraints.maxHeight) {
-            title.place(x = 0, y = 0)
-            date.place(
-                x = title.width,
-                y = (constraints.maxHeight - date.height).div(3)
-            )
-        }
-    }
+fun BottomStaticDrawerInit(
+    btmDrawerState: BottomDrawerState
+) {
+    BottomDrawerLayout(
+        drawerState = btmDrawerState,
+        drawerContent = {
+            Column(
+                modifier = Modifier.background(color = Color.Transparent)
+                    .padding(10.dp, 0.dp, 10.dp, 10.dp),
+                children = {
+                    Card(shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                        content = {
+                            Column(
+                                modifier = Modifier
+                                    .background(color = MaterialTheme.colors.surface),
+                                children = {
+                                    Text(
+                                        text = "Would you like to delete this conversation? This conversation will be deleted from all of your devices.",
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier.padding(20.dp, 10.dp, 20.dp, 10.dp),
+                                        style = TextStyle(
+                                            color = Color.Gray,
+                                            fontSize = 18.sp,
+                                            fontFamily = FontFamily.SansSerif
+                                        )
+                                    )
+                                    Divider(color = Color.LightGray, thickness = 1.dp)
+                                    Button(
+                                        onClick = {},
+                                        content = {
+                                            Text(
+                                                text = "Delete",
+                                                style = TextStyle(
+                                                    color = Color.Red,
+                                                    fontSize = 24.sp,
+                                                    fontFamily = FontFamily.SansSerif
+                                                )
+                                            )
+                                        },
+                                        backgroundColor = MaterialTheme.colors.surface,
+                                        modifier = Modifier.fillMaxWidth(),
+                                        shape = RoundedCornerShape(0)
+                                    )
+                                })
+                        })
+
+                    Divider(thickness = 20.dp, color = Color.Transparent)
+
+                    Button(
+                        onClick = { btmDrawerState.close() },
+                        content = {
+                            Text(
+                                text = "Cancel",
+                                style = TextStyle(
+                                    color = Color.Blue,
+                                    fontSize = 24.sp,
+                                    fontFamily = FontFamily.SansSerif
+                                )
+                            )
+                        },
+                        backgroundColor = Color.White,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(20)
+                    )
+                })
+        },
+        bodyContent = {},
+        gesturesEnabled = false,
+        modifier = Modifier,
+        drawerBackgroundColor = Color.LightGray,
+        scrimColor = Color.LightGray
+    )
+
 }
 
-
 @Composable
-fun StaticDrawerSample(
+fun BottomStaticDrawerEvents(
     btmDrawerState: BottomDrawerState,
     delBtnState: MutableState<DeleteBtnAnimateState>,
     delBtnIconState: MutableState<DeleteBtnAnimateState>,
     flagDrawer: MutableState<Boolean>
 ) {
-    BottomDrawerLayout(
-        drawerState = btmDrawerState,
-        drawerContent = {
-            Column(modifier = Modifier.padding(10.dp), children = {
-                Column(
-                    modifier = Modifier.border(
-                        border = BorderStroke(1.dp, Color.Black),
-                        shape = RoundedCornerShape(3.dp)
-                    )
-                        .fillMaxWidth(),
-                    children = {
-                        Text(
-                            text = "Would you like to delete this conversation? This conversation will be deleted from all of your devices.",
-                            textAlign = TextAlign.Center,
-                            modifier = Modifier.padding(5.dp)
-                        )
-                        Button(onClick = {}, content = {
-                            Text(text = "Delete", style = TextStyle(color = Color.Red))
-                        }, backgroundColor = Color.LightGray, modifier = Modifier.fillMaxWidth())
-                    })
-
-                Divider(thickness = 5.dp)
-
-                Button(onClick = {}, content = {
-                    Text(text = "Cancel", style = TextStyle(color = Color.Blue))
-                }, backgroundColor = Color.LightGray, modifier = Modifier.fillMaxWidth())
-            })
-        },
-        bodyContent = {},
-        gesturesEnabled = false,
-        modifier = Modifier,
-        drawerBackgroundColor = Color.White,
-    )
-
     if (btmDrawerState.isOpen) {
-        Log.d("TAG", "StaticDrawerSample: Open")
         flagDrawer.value = true
     } else if (btmDrawerState.isClosed && flagDrawer.value) {
-        Log.d("TAG", "StaticDrawerSample: Closed")
         delBtnState.value = DeleteBtnAnimateState.IDLE
         delBtnIconState.value = DeleteBtnAnimateState.IDLE
     }
-
 }

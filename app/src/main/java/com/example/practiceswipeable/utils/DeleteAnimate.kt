@@ -22,7 +22,6 @@ enum class DeleteBtnAnimateState {
 val width = DpPropKey()
 val iconPadding = DpPropKey()
 
-
 @Composable
 fun transactionAnimationSetting(
     delBtnState: MutableState<DeleteBtnAnimateState>, minWidth: Dp, maxWidth: Dp
