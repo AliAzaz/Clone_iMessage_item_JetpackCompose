@@ -7,9 +7,12 @@ import androidx.compose.animation.animatedValue
 import androidx.compose.animation.core.TransitionState
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.*
+import androidx.compose.foundation.Icon
+import androidx.compose.foundation.Text
 import androidx.compose.foundation.animation.FlingConfig
 import androidx.compose.foundation.animation.fling
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -136,7 +139,7 @@ fun MessageItemView(
                         .height(110.dp)
                         .padding(5.dp, 5.dp, 0.dp, 10.dp),
                     children = {
-                        Row(Modifier, children = {
+                        Row(modifier = Modifier, children = {
                             AvatarImage(url = R.drawable.scene_01)
                             Column(
                                 modifier = Modifier.padding(
@@ -324,8 +327,8 @@ fun RowView(
 @Composable
 fun AvatarImage(url: Int) {
     Box(
-        gravity = Alignment.Center,
         modifier = Modifier.fillMaxHeight(),
+        alignment = Alignment.Center,
         children = {
             CoilImage(
                 data = url, modifier = Modifier.border(3.dp, Color.Black, CircleShape)
