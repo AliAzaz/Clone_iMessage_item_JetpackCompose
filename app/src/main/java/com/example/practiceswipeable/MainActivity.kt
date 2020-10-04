@@ -36,7 +36,7 @@ import androidx.compose.ui.layout
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.setContent
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontFamily.Companion.SansSerif
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -51,6 +51,7 @@ import com.example.practiceswipeable.utils.width
 import dev.chrisbanes.accompanist.coil.CoilImage
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
+
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,8 +88,9 @@ fun SwipeableEvent() {
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
 
         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
+            BottomStaticDrawerInit(btmDrawerState)
 
-//            LazyColumnFor(items = listOf(0, 1), itemContent = { item ->
+//        LazyColumnFor(items = listOf(0, 1), itemContent = { item ->
             MessageItemView(
                 btnWidthState = btnWidthState,
                 delBtnState = delBtnState,
@@ -101,6 +103,7 @@ fun SwipeableEvent() {
                 btmDrawerState = btmDrawerState,
                 flagDrawer = flagDrawer
             )
+//        })
 
             BottomStaticDrawerEvents(
                 btmDrawerState = btmDrawerState,
@@ -109,11 +112,8 @@ fun SwipeableEvent() {
                 flagDrawer = flagDrawer
             )
 
-//            })
-
-            BottomStaticDrawerInit(btmDrawerState)
-
         })
+
     })
 
 
@@ -260,7 +260,8 @@ fun RowView(
     val collapse = remember { mutableStateOf(0) }
     val animatedCollapse = animatedValue(initVal = 0, converter = Int.VectorConverter)
 
-    val modify = modifier.draggable(orientation = Orientation.Horizontal,
+    val modify = modifier.draggable(
+        orientation = Orientation.Horizontal,
         onDragStarted = {
         },
         enabled = !flagDrawer.value,
@@ -413,7 +414,7 @@ fun BottomStaticDrawerInit(
                                         style = TextStyle(
                                             color = Color.Gray,
                                             fontSize = 18.sp,
-                                            fontFamily = FontFamily.SansSerif
+                                            fontFamily = SansSerif
                                         )
                                     )
                                     Divider(color = Color.LightGray, thickness = 1.dp)
@@ -425,7 +426,7 @@ fun BottomStaticDrawerInit(
                                                 style = TextStyle(
                                                     color = Color.Red,
                                                     fontSize = 24.sp,
-                                                    fontFamily = FontFamily.SansSerif
+                                                    fontFamily = SansSerif
                                                 )
                                             )
                                         },
@@ -446,7 +447,7 @@ fun BottomStaticDrawerInit(
                                 style = TextStyle(
                                     color = Color.Blue,
                                     fontSize = 24.sp,
-                                    fontFamily = FontFamily.SansSerif
+                                    fontFamily = SansSerif
                                 )
                             )
                         },
