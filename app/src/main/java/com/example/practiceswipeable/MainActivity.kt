@@ -44,10 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import com.example.practiceswipeable.ui.PracticeSwipeableTheme
-import com.example.practiceswipeable.utils.DeleteBtnAnimateState
-import com.example.practiceswipeable.utils.iconPadding
-import com.example.practiceswipeable.utils.transactionAnimationSetting
-import com.example.practiceswipeable.utils.width
+import com.example.practiceswipeable.utils.*
 import dev.chrisbanes.accompanist.coil.CoilImage
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -88,7 +85,15 @@ fun SwipeableEvent() {
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
 
         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
+
+            // Bottom Static Drawer
             BottomStaticDrawerInit(btmDrawerState)
+            BottomStaticDrawerEvents(
+                btmDrawerState = btmDrawerState,
+                delBtnState = delBtnState,
+                delBtnIconState = delBtnIconState,
+                flagDrawer = flagDrawer
+            )
 
 //        LazyColumnFor(items = listOf(0, 1), itemContent = { item ->
             MessageItemView(
@@ -104,13 +109,6 @@ fun SwipeableEvent() {
                 flagDrawer = flagDrawer
             )
 //        })
-
-            BottomStaticDrawerEvents(
-                btmDrawerState = btmDrawerState,
-                delBtnState = delBtnState,
-                delBtnIconState = delBtnIconState,
-                flagDrawer = flagDrawer
-            )
 
         })
 
@@ -129,72 +127,86 @@ fun MessageItemView(
     btmDrawerState: BottomDrawerState,
     flagDrawer: MutableState<Boolean>
 ) {
-    Column(modifier = Modifier.preferredHeight(110.dp), children = {
-        RowView(
-            btnWidthState = btnWidthState,
-            modifier = Modifier,
-            children = {
-                Box(
-                    modifier = Modifier.fillMaxWidth()
-                        .height(110.dp)
-                        .padding(5.dp, 5.dp, 0.dp, 10.dp),
-                    children = {
-                        Row(modifier = Modifier, children = {
-                            AvatarImage(url = R.drawable.scene_01)
-                            Column(
-                                modifier = Modifier.padding(
-                                    start = 10.dp,
-                                    top = 5.dp,
-                                    end = 15.dp
-                                ), children = {
-                                    TitleRowContainer {
-                                        TitleRow()
-                                    }
-                                    Text(
-                                        text = "ABCD 123456789",
-                                        maxLines = 1,
-                                        modifier = Modifier.preferredHeight(80.dp)
-                                            .padding(0.dp, 5.dp, 0.dp, 0.dp),
-                                        overflow = TextOverflow.Ellipsis,
-                                        style = MaterialTheme.typography.body2
-                                    )
-                                })
+
+    val itemDelState = remember { mutableStateOf(ItemDeleteBtnAnimateState.EXPAND) }
+    val itemAnimateState =
+        itemTransactionAnimationSetting(itemDelState, 0.dp, -btnWidthState.value.times(2).times(3))
+
+    Column(
+        modifier = Modifier.preferredHeight(110.dp) + (Modifier.offset(
+            x = itemAnimateState[itemOffset],
+            y = 0.dp
+        )
+                ), children = {
+            RowView(
+                btnWidthState = btnWidthState,
+                modifier = Modifier,
+                children = {
+                    Box(
+                        modifier = Modifier.fillMaxWidth()
+                            .height(110.dp)
+                            .padding(5.dp, 5.dp, 0.dp, 10.dp),
+                        children = {
+                            Row(modifier = Modifier, children = {
+                                AvatarImage(url = R.drawable.scene_01)
+                                Column(
+                                    modifier = Modifier.padding(
+                                        start = 10.dp,
+                                        top = 5.dp,
+                                        end = 15.dp
+                                    ), children = {
+                                        TitleRowContainer {
+                                            TitleRow()
+                                        }
+                                        Text(
+                                            text = "ABCD 123456789",
+                                            maxLines = 1,
+                                            modifier = Modifier.preferredHeight(80.dp)
+                                                .padding(0.dp, 5.dp, 0.dp, 0.dp),
+                                            overflow = TextOverflow.Ellipsis,
+                                            style = MaterialTheme.typography.body2
+                                        )
+                                    })
+                            })
                         })
-                    })
 
-                IconButton(
-                    onClick = {},
-                    modifier = Modifier.background(Color.Gray).height(110.dp),
-                    icon = {
-                        Icon(asset = Icons.Filled.Edit, tint = Color.White)
-                    })
+                    IconButton(
+                        onClick = {},
+                        modifier = Modifier.background(Color.Gray).height(110.dp),
+                        icon = {
+                            Icon(asset = Icons.Filled.Edit, tint = Color.White)
+                        })
 
 
-                IconButton(
-                    onClick = {
-                        delBtnState.value = DeleteBtnAnimateState.EXPAND
+                    IconButton(
+                        onClick = {
+                            /*delBtnState.value = DeleteBtnAnimateState.EXPAND
                         delBtnIconState.value = DeleteBtnAnimateState.EXPAND
-                        btmDrawerState.open()
-                    },
-                    modifier = Modifier.background(Color.Red).size(state[width], 110.dp),
-                    icon = {
-                        Icon(
-                            asset = Icons.Filled.Delete,
-                            tint = Color.White,
-                            modifier = Modifier.padding(0.dp, 0.dp, state[iconPadding], 0.dp)
-                        )
-                    })
-            },
-            delBtnState = delBtnState,
-            delBtnIconState = delBtnIconState,
-            flagDrawer = flagDrawer
-        )
+                        btmDrawerState.open()*/
 
-        Divider(
-            color = Color.LightGray,
-            modifier = Modifier.fillMaxWidth().height(1.dp)
-        )
-    })
+                            itemDelState.value = ItemDeleteBtnAnimateState.EXPAND
+
+
+                        },
+                        modifier = Modifier.background(Color.Red).size(state[width], 110.dp),
+                        icon = {
+                            Icon(
+                                asset = Icons.Filled.Delete,
+                                tint = Color.White,
+                                modifier = Modifier.padding(0.dp, 0.dp, state[iconPadding], 0.dp)
+                            )
+                        })
+                },
+                delBtnState = delBtnState,
+                delBtnIconState = delBtnIconState,
+                flagDrawer = flagDrawer
+            )
+
+            Divider(
+                color = Color.LightGray,
+                modifier = Modifier.fillMaxWidth().height(1.dp)
+            )
+        })
 }
 
 
