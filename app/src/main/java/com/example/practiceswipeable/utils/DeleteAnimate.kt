@@ -19,8 +19,15 @@ enum class DeleteBtnAnimateState {
     EXPAND, IDLE, INITIAL
 }
 
+
+enum class ItemDeleteBtnAnimateState {
+    EXPAND, IDLE
+}
+
 val width = DpPropKey()
 val iconPadding = DpPropKey()
+
+val itemOffset = DpPropKey()
 
 @Composable
 fun transactionAnimationSetting(
@@ -60,5 +67,40 @@ fun transactionAnimationSetting(
         definition = transDef,
         initState = delBtnState.value,
         toState = toState
+    )
+}
+
+@Composable
+fun itemTransactionAnimationSetting(
+    itemState: MutableState<ItemDeleteBtnAnimateState>,
+    minOffset: Dp,
+    maxOffset: Dp
+): TransitionState {
+
+    val transDef = transitionDefinition<ItemDeleteBtnAnimateState> {
+        state(ItemDeleteBtnAnimateState.EXPAND) {
+            this[itemOffset] = maxOffset
+        }
+        state(ItemDeleteBtnAnimateState.IDLE) {
+            this[itemOffset] = minOffset
+        }
+        transition(
+            fromState = ItemDeleteBtnAnimateState.IDLE,
+            toState = ItemDeleteBtnAnimateState.EXPAND
+        ) {
+            itemOffset using tween(durationMillis = 1000)
+        }
+    }
+
+    /*val toState = if (itemState.value == ItemDeleteBtnAnimateState.EXPAND) {
+        ItemDeleteBtnAnimateState.IDLE
+    } else {
+        ItemDeleteBtnAnimateState.EXPAND
+    }*/
+
+    return transition(
+        definition = transDef,
+        initState = ItemDeleteBtnAnimateState.IDLE,
+        toState = ItemDeleteBtnAnimateState.EXPAND
     )
 }
