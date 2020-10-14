@@ -1,6 +1,7 @@
 package com.example.practiceswipeable.utils
 
 import androidx.compose.animation.DpPropKey
+import androidx.compose.animation.core.IntPropKey
 import androidx.compose.animation.core.TransitionState
 import androidx.compose.animation.core.transitionDefinition
 import androidx.compose.animation.core.tween
@@ -27,7 +28,7 @@ enum class ItemDeleteBtnAnimateState {
 val width = DpPropKey()
 val iconPadding = DpPropKey()
 
-val itemOffset = DpPropKey()
+val itemOffset = IntPropKey()
 
 @Composable
 fun transactionAnimationSetting(
@@ -73,8 +74,8 @@ fun transactionAnimationSetting(
 @Composable
 fun itemTransactionAnimationSetting(
     itemState: MutableState<ItemDeleteBtnAnimateState>,
-    minOffset: Dp,
-    maxOffset: Dp
+    minOffset: Int,
+    maxOffset: Int
 ): TransitionState {
 
     val transDef = transitionDefinition<ItemDeleteBtnAnimateState> {
@@ -88,19 +89,19 @@ fun itemTransactionAnimationSetting(
             fromState = ItemDeleteBtnAnimateState.IDLE,
             toState = ItemDeleteBtnAnimateState.EXPAND
         ) {
-            itemOffset using tween(durationMillis = 1000)
+            itemOffset using tween(durationMillis = 500)
         }
     }
 
-    /*val toState = if (itemState.value == ItemDeleteBtnAnimateState.EXPAND) {
-        ItemDeleteBtnAnimateState.IDLE
-    } else {
+    val toState = if (itemState.value == ItemDeleteBtnAnimateState.EXPAND) {
         ItemDeleteBtnAnimateState.EXPAND
-    }*/
+    } else {
+        ItemDeleteBtnAnimateState.IDLE
+    }
 
     return transition(
         definition = transDef,
-        initState = ItemDeleteBtnAnimateState.IDLE,
-        toState = ItemDeleteBtnAnimateState.EXPAND
+        initState = itemState.value,
+        toState = toState
     )
 }

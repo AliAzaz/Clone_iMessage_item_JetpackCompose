@@ -4,9 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.animatedFloat
 import androidx.compose.animation.animatedValue
-import androidx.compose.animation.core.TransitionState
-import androidx.compose.animation.core.VectorConverter
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.Icon
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.animation.FlingConfig
@@ -44,7 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
 import com.example.practiceswipeable.ui.PracticeSwipeableTheme
-import com.example.practiceswipeable.utils.*
+import com.example.practiceswipeable.utils.DeleteBtnAnimateState
+import com.example.practiceswipeable.utils.iconPadding
+import com.example.practiceswipeable.utils.transactionAnimationSetting
+import com.example.practiceswipeable.utils.width
 import dev.chrisbanes.accompanist.coil.CoilImage
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
@@ -83,16 +84,22 @@ fun SwipeableEvent() {
         val flagDrawer = remember { mutableStateOf(false) }
         val delBtnState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
+        val subItemWidth = remember { mutableStateOf(0) }
+        val animatedSubItemCollapse = animatedValue(initVal = 0, converter = Int.VectorConverter)
 
         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
 
             // Bottom Static Drawer
-            BottomStaticDrawerInit(btmDrawerState)
+            BottomStaticDrawerInit(
+                btmDrawerState,
+                subItemWidth = subItemWidth,
+                animatedSubItemCollapse = animatedSubItemCollapse
+            )
             BottomStaticDrawerEvents(
                 btmDrawerState = btmDrawerState,
                 delBtnState = delBtnState,
                 delBtnIconState = delBtnIconState,
-                flagDrawer = flagDrawer
+                flagDrawer = flagDrawer,
             )
 
 //        LazyColumnFor(items = listOf(0, 1), itemContent = { item ->
@@ -106,7 +113,9 @@ fun SwipeableEvent() {
                     maxWidth = btnWidthState.value.times(3)
                 ),
                 btmDrawerState = btmDrawerState,
-                flagDrawer = flagDrawer
+                flagDrawer = flagDrawer,
+                subItemWidth = subItemWidth,
+                animatedSubItemCollapse = animatedSubItemCollapse
             )
 //        })
 
@@ -125,22 +134,21 @@ fun MessageItemView(
     delBtnIconState: MutableState<DeleteBtnAnimateState>,
     state: TransitionState,
     btmDrawerState: BottomDrawerState,
-    flagDrawer: MutableState<Boolean>
+    flagDrawer: MutableState<Boolean>,
+    subItemWidth: MutableState<Int>,
+    animatedSubItemCollapse: AnimatedValue<Int, AnimationVector1D>
 ) {
 
-    val itemDelState = remember { mutableStateOf(ItemDeleteBtnAnimateState.EXPAND) }
-    val itemAnimateState =
-        itemTransactionAnimationSetting(itemDelState, 0.dp, -btnWidthState.value.times(2).times(3))
-
     Column(
-        modifier = Modifier.preferredHeight(110.dp) + (Modifier.offset(
-            x = itemAnimateState[itemOffset],
-            y = 0.dp
-        )
-                ), children = {
+        modifier = Modifier.preferredHeight(110.dp).layout { measurable, constraints ->
+            val child = measurable.measure(constraints)
+            subItemWidth.value = child.width
+            layout(child.width, child.height) {
+                child.place(animatedSubItemCollapse.value, 0)
+            }
+        }, children = {
             RowView(
                 btnWidthState = btnWidthState,
-                modifier = Modifier,
                 children = {
                     Box(
                         modifier = Modifier.fillMaxWidth()
@@ -180,13 +188,9 @@ fun MessageItemView(
 
                     IconButton(
                         onClick = {
-                            /*delBtnState.value = DeleteBtnAnimateState.EXPAND
-                        delBtnIconState.value = DeleteBtnAnimateState.EXPAND
-                        btmDrawerState.open()*/
-
-                            itemDelState.value = ItemDeleteBtnAnimateState.EXPAND
-
-
+                            delBtnState.value = DeleteBtnAnimateState.EXPAND
+                            delBtnIconState.value = DeleteBtnAnimateState.EXPAND
+                            btmDrawerState.open()
                         },
                         modifier = Modifier.background(Color.Red).size(state[width], 110.dp),
                         icon = {
@@ -267,7 +271,6 @@ fun RowView(
 ) {
     val threshold = .8f
     val width = remember { mutableStateOf(0) }
-    val deleted = remember { mutableStateOf(false) }
     val positionOffset = animatedFloat(0f)
     val collapse = remember { mutableStateOf(0) }
     val animatedCollapse = animatedValue(initVal = 0, converter = Int.VectorConverter)
@@ -403,7 +406,9 @@ fun TitleRow() {
 /*Bottom Drawer*/
 @Composable
 fun BottomStaticDrawerInit(
-    btmDrawerState: BottomDrawerState
+    btmDrawerState: BottomDrawerState,
+    subItemWidth: MutableState<Int>,
+    animatedSubItemCollapse: AnimatedValue<Int, AnimationVector1D>
 ) {
     BottomDrawerLayout(
         drawerState = btmDrawerState,
@@ -431,7 +436,13 @@ fun BottomStaticDrawerInit(
                                     )
                                     Divider(color = Color.LightGray, thickness = 1.dp)
                                     Button(
-                                        onClick = {},
+                                        onClick = {
+                                            btmDrawerState.close()
+                                            animatedSubItemCollapse.animateTo(
+                                                -subItemWidth.value,
+                                                tween(durationMillis = 500)
+                                            )
+                                        },
                                         content = {
                                             Text(
                                                 text = "Delete",
@@ -483,7 +494,7 @@ fun BottomStaticDrawerEvents(
     btmDrawerState: BottomDrawerState,
     delBtnState: MutableState<DeleteBtnAnimateState>,
     delBtnIconState: MutableState<DeleteBtnAnimateState>,
-    flagDrawer: MutableState<Boolean>
+    flagDrawer: MutableState<Boolean>,
 ) {
     if (btmDrawerState.isOpen) {
         flagDrawer.value = true
