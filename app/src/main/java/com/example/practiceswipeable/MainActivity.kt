@@ -84,7 +84,7 @@ fun SwipeableEvent() {
         val flagDrawer = remember { mutableStateOf(false) }
         val delBtnState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
-        val subItemWidth = remember { mutableStateOf(0) }
+        val subItemHeight = remember { mutableStateOf(0) }
         val animatedSubItemCollapse = animatedValue(initVal = 0, converter = Int.VectorConverter)
 
         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
@@ -92,7 +92,7 @@ fun SwipeableEvent() {
             // Bottom Static Drawer
             BottomStaticDrawerInit(
                 btmDrawerState,
-                subItemWidth = subItemWidth,
+                subItemHeight = subItemHeight,
                 animatedSubItemCollapse = animatedSubItemCollapse
             )
             BottomStaticDrawerEvents(
@@ -114,7 +114,7 @@ fun SwipeableEvent() {
                 ),
                 btmDrawerState = btmDrawerState,
                 flagDrawer = flagDrawer,
-                subItemWidth = subItemWidth,
+                subItemHeight = subItemHeight,
                 animatedSubItemCollapse = animatedSubItemCollapse
             )
 //        })
@@ -135,16 +135,16 @@ fun MessageItemView(
     state: TransitionState,
     btmDrawerState: BottomDrawerState,
     flagDrawer: MutableState<Boolean>,
-    subItemWidth: MutableState<Int>,
+    subItemHeight: MutableState<Int>,
     animatedSubItemCollapse: AnimatedValue<Int, AnimationVector1D>
 ) {
 
     Column(
         modifier = Modifier.preferredHeight(110.dp).layout { measurable, constraints ->
             val itemView = measurable.measure(constraints)
-            subItemWidth.value = itemView.width
+            subItemHeight.value = itemView.height
             layout(itemView.width, itemView.height) {
-                itemView.place(animatedSubItemCollapse.value, 0)
+                itemView.place(0, animatedSubItemCollapse.value)
             }
         }, children = {
             RowView(
@@ -397,7 +397,7 @@ fun TitleRow() {
 @Composable
 fun BottomStaticDrawerInit(
     btmDrawerState: BottomDrawerState,
-    subItemWidth: MutableState<Int>,
+    subItemHeight: MutableState<Int>,
     animatedSubItemCollapse: AnimatedValue<Int, AnimationVector1D>
 ) {
     BottomDrawerLayout(
@@ -429,7 +429,7 @@ fun BottomStaticDrawerInit(
                                         onClick = {
                                             btmDrawerState.close()
                                             animatedSubItemCollapse.animateTo(
-                                                -subItemWidth.value * 2,
+                                                -subItemHeight.value,
                                                 tween(durationMillis = 500)
                                             )
                                         },
