@@ -141,10 +141,10 @@ fun MessageItemView(
 
     Column(
         modifier = Modifier.preferredHeight(110.dp).layout { measurable, constraints ->
-            val child = measurable.measure(constraints)
-            subItemWidth.value = child.width
-            layout(child.width, child.height) {
-                child.place(animatedSubItemCollapse.value, 0)
+            val itemView = measurable.measure(constraints)
+            subItemWidth.value = itemView.width
+            layout(itemView.width, itemView.height) {
+                itemView.place(animatedSubItemCollapse.value, 0)
             }
         }, children = {
             RowView(
@@ -180,7 +180,7 @@ fun MessageItemView(
 
                     IconButton(
                         onClick = {},
-                        modifier = Modifier.background(Color.Gray).height(110.dp),
+                        modifier = Modifier.background(MaterialTheme.colors.primary).height(110.dp),
                         icon = {
                             Icon(asset = Icons.Filled.Edit, tint = Color.White)
                         })
@@ -272,13 +272,9 @@ fun RowView(
     val threshold = .8f
     val width = remember { mutableStateOf(0) }
     val positionOffset = animatedFloat(0f)
-    val collapse = remember { mutableStateOf(0) }
-    val animatedCollapse = animatedValue(initVal = 0, converter = Int.VectorConverter)
 
     val modify = modifier.draggable(
         orientation = Orientation.Horizontal,
-        onDragStarted = {
-        },
         enabled = !flagDrawer.value,
         onDrag = { delta ->
             positionOffset.snapTo((positionOffset.value + delta).coerceAtMost(0f))
@@ -290,12 +286,6 @@ fun RowView(
                 FlingConfig(anchors = listOf(-width.value.toFloat(), width.value.toFloat()))
             if (positionOffset.value.absoluteValue >= threshold) {
                 positionOffset.fling(velocity, config) { _, endValue, _ ->
-                    if (endValue != 0f) {
-                        animatedCollapse.snapTo(collapse.value)
-                        animatedCollapse.animateTo(0, onEnd = { _, _ ->
-
-                        }, anim = tween(500))
-                    }
                 }
             }
 
@@ -362,10 +352,10 @@ fun TitleRowContainer(children: @Composable () -> Unit) {
     Layout(children = children, modifier = Modifier.height(30.dp)) { measurables, constraints ->
         val width = constraints.maxWidth.div(5)
         val title = measurables[0].measure(
-            androidx.compose.ui.unit.Constraints.fixedWidth(width.times(4))
+            androidx.compose.ui.unit.Constraints.fixedWidth(width.times(3))
         )
         val date = measurables[1].measure(
-            androidx.compose.ui.unit.Constraints.fixedWidth(width)
+            androidx.compose.ui.unit.Constraints.fixedWidth(width.times(2))
         )
         layout(width = constraints.maxWidth, height = constraints.maxHeight) {
             title.place(x = 0, y = 0)
@@ -439,7 +429,7 @@ fun BottomStaticDrawerInit(
                                         onClick = {
                                             btmDrawerState.close()
                                             animatedSubItemCollapse.animateTo(
-                                                -subItemWidth.value,
+                                                -subItemWidth.value * 2,
                                                 tween(durationMillis = 500)
                                             )
                                         },

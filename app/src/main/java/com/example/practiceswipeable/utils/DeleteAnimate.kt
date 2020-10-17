@@ -1,10 +1,7 @@
 package com.example.practiceswipeable.utils
 
 import androidx.compose.animation.DpPropKey
-import androidx.compose.animation.core.IntPropKey
-import androidx.compose.animation.core.TransitionState
-import androidx.compose.animation.core.transitionDefinition
-import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.*
 import androidx.compose.animation.transition
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
@@ -52,9 +49,13 @@ fun transactionAnimationSetting(
             width using tween(durationMillis = 500)
             iconPadding using tween(durationMillis = 500)
         }
-        transition(DeleteBtnAnimateState.IDLE to DeleteBtnAnimateState.EXPAND) {
+        /*transition(DeleteBtnAnimateState.IDLE to DeleteBtnAnimateState.EXPAND) {
             width using tween(durationMillis = 500)
             iconPadding using tween(durationMillis = 500)
+        }*/
+        transition(DeleteBtnAnimateState.IDLE to DeleteBtnAnimateState.EXPAND) {
+            width using snap()
+            iconPadding using snap()
         }
     }
 
