@@ -13,6 +13,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.draggable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumnFor
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -41,6 +42,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.ui.tooling.preview.Preview
+import com.example.practiceswipeable.module.ItemModel
 import com.example.practiceswipeable.ui.PracticeSwipeableTheme
 import com.example.practiceswipeable.utils.DeleteBtnAnimateState
 import com.example.practiceswipeable.utils.iconPadding
@@ -79,20 +81,28 @@ fun SwipeableEvent() {
 
     PracticeSwipeableTheme(content = {
 
-        val btnWidthState = remember { mutableStateOf(0.dp) }
+        val itemModelState = remember {
+            mutableStateOf(
+                ItemModel(
+                    delBtnWidthState = mutableStateOf(0.dp),
+                    subItemHeight = 0
+                )
+            )
+        }
+
         val btmDrawerState = rememberBottomDrawerState(BottomDrawerValue.Closed)
         val flagDrawer = remember { mutableStateOf(false) }
         val delBtnState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
         val delBtnIconState = remember { mutableStateOf(DeleteBtnAnimateState.INITIAL) }
-        val subItemHeight = remember { mutableStateOf(0) }
-        val animatedSubItemCollapse = animatedValue(initVal = 0, converter = Int.VectorConverter)
+        val animatedSubItemCollapse =
+            animatedValue(initVal = 0, converter = Int.VectorConverter)
 
         Box(modifier = Modifier.fillMaxHeight().fillMaxWidth(), children = {
 
             // Bottom Static Drawer
             BottomStaticDrawerInit(
-                btmDrawerState,
-                subItemHeight = subItemHeight,
+                btmDrawerState = btmDrawerState,
+                subItemHeight = itemModelState,
                 animatedSubItemCollapse = animatedSubItemCollapse
             )
             BottomStaticDrawerEvents(
@@ -102,22 +112,16 @@ fun SwipeableEvent() {
                 flagDrawer = flagDrawer,
             )
 
-//        LazyColumnFor(items = listOf(0, 1), itemContent = { item ->
-            MessageItemView(
-                btnWidthState = btnWidthState,
-                delBtnState = delBtnState,
-                delBtnIconState = delBtnIconState,
-                state = transactionAnimationSetting(
+            LazyColumnFor(items = listOf(0), itemContent = { item ->
+                MessageItemView(
+                    btnWidthState = itemModelState,
                     delBtnState = delBtnState,
-                    minWidth = btnWidthState.value,
-                    maxWidth = btnWidthState.value.times(3)
-                ),
-                btmDrawerState = btmDrawerState,
-                flagDrawer = flagDrawer,
-                subItemHeight = subItemHeight,
-                animatedSubItemCollapse = animatedSubItemCollapse
-            )
-//        })
+                    delBtnIconState = delBtnIconState,
+                    btmDrawerState = btmDrawerState,
+                    flagDrawer = flagDrawer,
+                    animatedSubItemCollapse = animatedSubItemCollapse
+                )
+            })
 
         })
 
@@ -129,20 +133,24 @@ fun SwipeableEvent() {
 
 @Composable
 fun MessageItemView(
-    btnWidthState: MutableState<Dp>,
+    btnWidthState: MutableState<ItemModel>,
     delBtnState: MutableState<DeleteBtnAnimateState>,
     delBtnIconState: MutableState<DeleteBtnAnimateState>,
-    state: TransitionState,
     btmDrawerState: BottomDrawerState,
     flagDrawer: MutableState<Boolean>,
-    subItemHeight: MutableState<Int>,
     animatedSubItemCollapse: AnimatedValue<Int, AnimationVector1D>
 ) {
+
+    val state = transactionAnimationSetting(
+        delBtnState = delBtnState,
+        minWidth = btnWidthState.value.delBtnWidthState.value,
+        maxWidth = btnWidthState.value.delBtnWidthState.value.times(3)
+    )
 
     Column(
         modifier = Modifier.preferredHeight(110.dp).layout { measurable, constraints ->
             val itemView = measurable.measure(constraints)
-            subItemHeight.value = itemView.height
+            btnWidthState.value = btnWidthState.value.copy(subItemHeight = itemView.height)
             layout(itemView.width, itemView.height) {
                 itemView.place(0, animatedSubItemCollapse.value)
             }
@@ -180,7 +188,8 @@ fun MessageItemView(
 
                     IconButton(
                         onClick = {},
-                        modifier = Modifier.background(MaterialTheme.colors.primary).height(110.dp),
+                        modifier = Modifier.background(MaterialTheme.colors.primary)
+                            .height(110.dp),
                         icon = {
                             Icon(asset = Icons.Filled.Edit, tint = Color.White)
                         })
@@ -192,12 +201,18 @@ fun MessageItemView(
                             delBtnIconState.value = DeleteBtnAnimateState.EXPAND
                             btmDrawerState.open()
                         },
-                        modifier = Modifier.background(Color.Red).size(state[width], 110.dp),
+                        modifier = Modifier.background(Color.Red)
+                            .size(state[width], 110.dp),
                         icon = {
                             Icon(
                                 asset = Icons.Filled.Delete,
                                 tint = Color.White,
-                                modifier = Modifier.padding(0.dp, 0.dp, state[iconPadding], 0.dp)
+                                modifier = Modifier.padding(
+                                    0.dp,
+                                    0.dp,
+                                    state[iconPadding],
+                                    0.dp
+                                )
                             )
                         })
                 },
@@ -234,7 +249,13 @@ fun Modifier.swipe(): Modifier {
         },
         onDragStopped = { velocity ->
             val config =
-                FlingConfig(anchors = listOf(-width.value.toFloat(), 0f, width.value.toFloat()))
+                FlingConfig(
+                    anchors = listOf(
+                        -width.value.toFloat(),
+                        0f,
+                        width.value.toFloat()
+                    )
+                )
             if (positionOffset.value.absoluteValue >= threshold) {
                 positionOffset.fling(velocity, config) { _, endValue, _ ->
                     if (endValue != 0f) {
@@ -262,7 +283,7 @@ fun Modifier.swipe(): Modifier {
 
 @Composable
 fun RowView(
-    btnWidthState: MutableState<Dp>,
+    btnWidthState: MutableState<ItemModel>,
     modifier: Modifier = Modifier,
     children: @Composable () -> Unit,
     delBtnState: MutableState<DeleteBtnAnimateState>,
@@ -308,7 +329,7 @@ fun RowView(
             androidx.compose.ui.unit.Constraints.fixedWidth(smallWidth)
         )
 
-        btnWidthState.value = smallWidth.toDp()
+        btnWidthState.value.delBtnWidthState.value = smallWidth.toDp()
         positionOffset.setBounds(-smallWidth.toFloat(), 0f)
         layout(width = constraints.maxWidth, height = constraints.maxHeight) {
             card.placeRelative(
@@ -349,7 +370,10 @@ fun AvatarImage(url: Int) {
 /*Title and Date Items*/
 @Composable
 fun TitleRowContainer(children: @Composable () -> Unit) {
-    Layout(children = children, modifier = Modifier.height(30.dp)) { measurables, constraints ->
+    Layout(
+        children = children,
+        modifier = Modifier.height(30.dp)
+    ) { measurables, constraints ->
         val width = constraints.maxWidth.div(5)
         val title = measurables[0].measure(
             androidx.compose.ui.unit.Constraints.fixedWidth(width.times(3))
@@ -397,7 +421,7 @@ fun TitleRow() {
 @Composable
 fun BottomStaticDrawerInit(
     btmDrawerState: BottomDrawerState,
-    subItemHeight: MutableState<Int>,
+    subItemHeight: MutableState<ItemModel>,
     animatedSubItemCollapse: AnimatedValue<Int, AnimationVector1D>
 ) {
     BottomDrawerLayout(
@@ -417,7 +441,12 @@ fun BottomStaticDrawerInit(
                                     Text(
                                         text = "Would you like to delete this conversation? This conversation will be deleted from all of your devices.",
                                         textAlign = TextAlign.Center,
-                                        modifier = Modifier.padding(20.dp, 10.dp, 20.dp, 10.dp),
+                                        modifier = Modifier.padding(
+                                            20.dp,
+                                            10.dp,
+                                            20.dp,
+                                            10.dp
+                                        ),
                                         style = TextStyle(
                                             color = Color.Gray,
                                             fontSize = 18.sp,
@@ -429,7 +458,7 @@ fun BottomStaticDrawerInit(
                                         onClick = {
                                             btmDrawerState.close()
                                             animatedSubItemCollapse.animateTo(
-                                                -subItemHeight.value,
+                                                -subItemHeight.value.subItemHeight,
                                                 tween(durationMillis = 500)
                                             )
                                         },
@@ -443,7 +472,9 @@ fun BottomStaticDrawerInit(
                                                 )
                                             )
                                         },
-                                        backgroundColor = MaterialTheme.colors.surface,
+                                        colors = ButtonConstants.defaultButtonColors(
+                                            backgroundColor = MaterialTheme.colors.surface
+                                        ),
                                         modifier = Modifier.fillMaxWidth(),
                                         shape = RoundedCornerShape(0)
                                     )
@@ -464,7 +495,7 @@ fun BottomStaticDrawerInit(
                                 )
                             )
                         },
-                        backgroundColor = Color.White,
+                        colors = ButtonConstants.defaultButtonColors(backgroundColor = Color.White),
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(20)
                     )
